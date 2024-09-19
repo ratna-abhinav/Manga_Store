@@ -1,7 +1,29 @@
 package com.example.shoppingdotcom.service;
 
-import com.example.shoppingdotcom.model.UserDtls;
+import com.example.shoppingdotcom.model.Users;
+
+import java.util.List;
 
 public interface UserService {
-    public UserDtls saveUser(UserDtls user);
+    public Users saveUser(Users users);
+
+    public Users getUserByEmail(String email);
+
+    public List<Users> getUsers(String role);
+
+    public Boolean updateAccountStatus(Integer id, Boolean status);
+
+    public void increaseFailedAttempt(Users user);
+
+    public void userAccountLock(Users user);
+
+    public boolean unlockAccountTimeExpired(Users user);
+
+    public void resetAttempt(int userId);
+
+    public void updateUserResetToken(String email, String resetToken);
+
+    public Users getUserByToken(String token);
+
+    public Users updateUser(Users user);
 }

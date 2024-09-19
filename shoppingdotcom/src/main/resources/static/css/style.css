@@ -15,3 +15,30 @@
 .custom-hover:hover {
         background-color: #b8e0ea;
 }
+
+/* Highlight effect on hover */
+#custom-dropdown .dropdown-item {
+  position: relative; /* Ensure positioning context for pseudo-element */
+}
+
+#custom-dropdown .dropdown-item:hover::before {
+  content: ""; /* Required for pseudo-element */
+  position: absolute; /* Position it relative to the li */
+  top: 0; /* Align to top */
+  left: 0; /* Align to left */
+  width: 100%; /* Cover the full width */
+  height: 100%; /* Cover the full height */
+  background-color: rgba(0, 123, 255, 0.1); /* Light blue background for highlight */
+  border-radius: 0.25rem; /* Rounded corners */
+  z-index: -1; /* Place it behind the text */
+  transition: background-color 0.3s ease; /* Smooth transition effect */
+}
+
+#navbarSupportedContent .dropdown-item:hover {
+  color: #ba9e04;
+}
+
+#navbarSupportedContent li:hover {
+    background-color: #bd08aa;
+    border-radius: 0.25rem;
+}

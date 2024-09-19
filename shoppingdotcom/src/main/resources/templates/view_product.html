@@ -70,12 +70,12 @@
                     </div>
 
                     <th:block th:if="${product.stock>0}">
-                        <th:block th:if="${user==null}">
+                        <th:block th:if="${users==null}">
                             <a href="/login" class="btn btn-danger col-md-12">Add To Cart</a>
                         </th:block>
 
-                        <th:block th:unless="${user==null}">
-                            <a th:href="@{'/user/addCart?pid='+${product.id}+'&uid='+${user.id}}" class="btn btn-danger col-md-12">Add To Cart</a>
+                        <th:block th:unless="${users==null}">
+                            <a th:href="@{'/users/addCart?pid='+${product.id}+'&uid='+${users.id}}" class="btn btn-danger col-md-12">Add To Cart</a>
                         </th:block>
                     </th:block>
 

@@ -1,7 +1,14 @@
 package com.example.shoppingdotcom.repository;
 
-import com.example.shoppingdotcom.model.UserDtls;
+import com.example.shoppingdotcom.model.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserRepository extends JpaRepository<UserDtls, Integer> {
+import java.util.List;
+
+public interface UserRepository extends JpaRepository<Users, Integer> {
+    public Users findByEmail(String username);
+
+    public List<Users> findByRole(String role);
+
+    public Users findByResetToken(String token);
 }

@@ -53,9 +53,6 @@ public class ProductServiceImpl implements ProductService {
     public Product updateProduct(Product product, MultipartFile image) {
 
         Product dbProduct = getProductById(product.getId());
-        System.out.println("Inside UpdateCategory()");
-        System.out.println("Product Id: " + product.getId());
-
         String imageName = image.isEmpty() ? dbProduct.getImage() : image.getOriginalFilename();
 
         dbProduct.setTitle(product.getTitle());
@@ -70,8 +67,6 @@ public class ProductServiceImpl implements ProductService {
         Double disocuntValue = product.getPrice() * (product.getDiscount() / 100.0);
         Double discountedPrice = product.getPrice() - disocuntValue;
         dbProduct.setDiscountedPrice(discountedPrice);
-
-        System.out.println("Discounted Price: " + discountedPrice);
 
         Product updateProduct = productRepository.save(dbProduct);
         if (!ObjectUtils.isEmpty(updateProduct)) {

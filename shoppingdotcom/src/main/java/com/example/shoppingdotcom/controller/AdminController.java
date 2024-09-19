@@ -2,8 +2,10 @@ package com.example.shoppingdotcom.controller;
 
 import com.example.shoppingdotcom.model.Category;
 import com.example.shoppingdotcom.model.Product;
+import com.example.shoppingdotcom.model.Users;
 import com.example.shoppingdotcom.service.CategoryService;
 import com.example.shoppingdotcom.service.ProductService;
+import com.example.shoppingdotcom.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -19,6 +21,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.security.Principal;
+import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
@@ -29,6 +33,21 @@ public class AdminController {
 
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private UserService userService;
+
+    @ModelAttribute
+    public void getUserDetails(Principal p, Model m) {
+        if (p != null) {
+            String email = p.getName();
+            Users currentUser = userService.getUserByEmail(email);
+            m.addAttribute("users", currentUser);
+        }
+        List<Category> activeCategories = categoryService.getAllActiveCategory();
+        m.addAttribute("activeCategoriesSection", activeCategories);
+    }
+
 
     @GetMapping("/")
     public String index() {
@@ -193,7 +212,6 @@ public class AdminController {
     @PostMapping("/updateProduct/{id}")
     public String updateProduct(@PathVariable("id") int id, @ModelAttribute Product product, @RequestParam("file") MultipartFile image, HttpSession session) {
         product.setId(id);
-        System.out.println("Id: " + id);
         if (product.getDiscount() < 0 || product.getDiscount() > 100) {
             session.setAttribute("errorMsg", "invalid Discount!");
         } else {
@@ -205,5 +223,23 @@ public class AdminController {
             }
         }
         return "redirect:/admin/editProduct/" + product.getId();
+    }
+
+    @GetMapping("/users")
+    public String getAllUsers(Model m) {
+        List<Users> users = userService.getUsers("ROLE_USER");
+        m.addAttribute("allUsers", users);
+        return "/admin/users";
+    }
+
+    @GetMapping("/updateStatus")
+    public String updateUserAccountStatus(@RequestParam Boolean status, @RequestParam Integer id, HttpSession session) {
+        Boolean f = userService.updateAccountStatus(id, status);
+        if (f) {
+            session.setAttribute("succMsg", "Account Status Updated");
+        } else {
+            session.setAttribute("errorMsg", "Account status not updated! Internal Server Error");
+        }
+        return "redirect:/admin/users";
     }
 }

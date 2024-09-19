@@ -2,15 +2,28 @@ package com.example.shoppingdotcom.controller;
 
 import com.example.shoppingdotcom.model.Category;
 import com.example.shoppingdotcom.model.Product;
+import com.example.shoppingdotcom.model.Users;
 import com.example.shoppingdotcom.service.CategoryService;
 import com.example.shoppingdotcom.service.ProductService;
+import com.example.shoppingdotcom.service.UserService;
+import com.example.shoppingdotcom.util.CommonUtils;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.util.ObjectUtils;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.security.Principal;
 import java.util.List;
 
 @Controller
@@ -22,12 +35,29 @@ public class HomeController {
     @Autowired
     private ProductService productService;
 
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private CommonUtils commonUtil;
+
+    @ModelAttribute
+    public void getUserDetails(Principal p, Model m) {
+        if (p != null) {
+            String email = p.getName();
+            Users currentUser = userService.getUserByEmail(email);
+            m.addAttribute("users", currentUser);
+        }
+        List<Category> activeCategories = categoryService.getAllActiveCategory();
+        m.addAttribute("activeCategoriesSection", activeCategories);
+    }
+
     @GetMapping("/")
     public String index(Model m) {
         return "index";
     }
 
-    @GetMapping("/login")
+    @GetMapping("/signin")
     public String login(Model m) {
         return "login";
     }
@@ -52,5 +82,26 @@ public class HomeController {
         Product product = productService.getProductById(id);
         m.addAttribute("product", product);
         return "view_product";
+    }
+
+    @PostMapping("/saveUser")
+    public String saveUser(@ModelAttribute Users user, @RequestParam("img") MultipartFile file, HttpSession session) throws IOException {
+
+        String imageName = file.isEmpty() ? "default.jpg" : file.getOriginalFilename();
+        user.setProfileImage(imageName);
+        Users saveUser = userService.saveUser(user);
+
+        if (!ObjectUtils.isEmpty(saveUser)) {
+            if (!file.isEmpty()) {
+                File saveFile = new ClassPathResource("static/img").getFile();
+                Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "profile_img" + File.separator + imageName);
+                System.out.println("Path = " + path);
+                Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+            }
+            session.setAttribute("succMsg", "User registered successfully");
+        } else {
+            session.setAttribute("errorMsg", "User cannot be saved! Internal Server error");
+        }
+        return "redirect:/register";
     }
 }
