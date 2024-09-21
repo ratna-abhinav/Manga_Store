@@ -12,6 +12,7 @@ import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 
@@ -31,23 +32,27 @@ public class AuthFailureHandlerImpl extends SimpleUrlAuthenticationFailureHandle
         String email = request.getParameter("username");
         Users user = userRepository.findByEmail(email);
 
-        if (user.getIsEnable()) {
-            if (user.getAccountNonLocked()) {
-                if (user.getFailedAttempt() < AppConstants.ATTEMPT_TIME) {
-                    userService.increaseFailedAttempt(user);
+        if (ObjectUtils.isEmpty(user)) {
+            exception = new LockedException("Invalid Email!");
+        } else {
+            if (user.getIsEnable()) {
+                if (user.getAccountNonLocked()) {
+                    if (user.getFailedAttempt() < AppConstants.ATTEMPT_TIME) {
+                        userService.increaseFailedAttempt(user);
+                    } else {
+                        userService.userAccountLock(user);
+                        exception = new LockedException("Your account is locked !! No of failed attempts exceeded the limit");
+                    }
                 } else {
-                    userService.userAccountLock(user);
-                    exception = new LockedException("Your account is locked !! No of failed attempts = 3");
+                    if (userService.unlockAccountTimeExpired(user)) {
+                        exception = new LockedException("Your account is unlocked !! Please try to login again");
+                    } else {
+                        exception = new LockedException("Your account is locked !! Please try after sometime");
+                    }
                 }
             } else {
-                if (userService.unlockAccountTimeExpired(user)) {
-                    exception = new LockedException("Your account is unlocked !! Please try to login again");
-                } else {
-                    exception = new LockedException("Your account is locked !! Please try after sometime");
-                }
+                exception = new LockedException("Your account is Inactive!");
             }
-        } else {
-            exception = new LockedException("Your account is Inactive!");
         }
         super.setDefaultFailureUrl("/signin?error");
         super.onAuthenticationFailure(request, response, exception);
