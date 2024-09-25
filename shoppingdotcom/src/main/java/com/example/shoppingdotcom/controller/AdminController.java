@@ -3,6 +3,7 @@ package com.example.shoppingdotcom.controller;
 import com.example.shoppingdotcom.model.Category;
 import com.example.shoppingdotcom.model.Product;
 import com.example.shoppingdotcom.model.Users;
+import com.example.shoppingdotcom.service.CartService;
 import com.example.shoppingdotcom.service.CategoryService;
 import com.example.shoppingdotcom.service.ProductService;
 import com.example.shoppingdotcom.service.UserService;
@@ -37,12 +38,17 @@ public class AdminController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private CartService cartService;
+
     @ModelAttribute
     public void getUserDetails(Principal p, Model m) {
         if (p != null) {
             String email = p.getName();
             Users currentUser = userService.getUserByEmail(email);
             m.addAttribute("users", currentUser);
+            Integer countCart = cartService.getCountCart(currentUser.getId());
+            m.addAttribute("countCart", countCart);
         }
         List<Category> activeCategories = categoryService.getAllActiveCategory();
         m.addAttribute("activeCategoriesSection", activeCategories);
@@ -176,7 +182,6 @@ public class AdminController {
             File saveFile = new ClassPathResource("static/img").getFile();
             Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "product_img" + File.separator + imageName);
 
-            System.out.println(path);
             Files.copy(image.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
             session.setAttribute("succMsg", "Product saved successfully");
         } else {

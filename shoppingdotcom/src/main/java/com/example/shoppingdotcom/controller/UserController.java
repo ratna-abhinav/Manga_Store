@@ -1,21 +1,24 @@
 package com.example.shoppingdotcom.controller;
 
-import com.example.shoppingdotcom.model.Category;
-import com.example.shoppingdotcom.model.Users;
+import com.example.shoppingdotcom.model.*;
+import com.example.shoppingdotcom.service.CartService;
 import com.example.shoppingdotcom.service.CategoryService;
+import com.example.shoppingdotcom.service.OrderService;
 import com.example.shoppingdotcom.service.UserService;
+import com.example.shoppingdotcom.util.OrderStatus;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.util.ObjectUtils;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Objects;
 
 @Controller
-@RequestMapping("/user")
+@RequestMapping("/users")
 public class UserController {
 
     @Autowired
@@ -24,12 +27,20 @@ public class UserController {
     @Autowired
     private CategoryService categoryService;
 
+    @Autowired
+    private CartService cartService;
+
+    @Autowired
+    private OrderService orderService;
+
     @ModelAttribute
     public void getUserDetails(Principal p, Model m) {
         if (p != null) {
             String email = p.getName();
             Users currentUser = userService.getUserByEmail(email);
             m.addAttribute("users", currentUser);
+            Integer cartQuantity = cartService.getCountCart(currentUser.getId());
+            m.addAttribute("countCart", cartQuantity);
         }
         List<Category> activeCategories = categoryService.getAllActiveCategory();
         m.addAttribute("activeCategoriesSection", activeCategories);
@@ -40,4 +51,110 @@ public class UserController {
     public String home() {
         return "user/home";
     }
+
+    @GetMapping("/addCart")
+    public String addToCart(@RequestParam Integer pid, @RequestParam Integer uid, HttpSession session) {
+        try {
+            CartItem saveCartItem = cartService.saveCart(pid, uid);
+
+            if (ObjectUtils.isEmpty(saveCartItem)) {
+                session.setAttribute("errorMsg", "Failed to add the product !! Internal Server Error");
+            } else {
+                session.setAttribute("succMsg", "Added to cart !!");
+            }
+        } catch (Exception e) {
+            session.setAttribute("errorMsg", "Cannot be added !!");
+        }
+        return "redirect:/product/" + pid;
+    }
+
+    @GetMapping("/cart")
+    public String loadCartPage(Principal p, Model m) {
+        Users user = getLoggedInUserDetails(p);
+        List<CartItem> cartItems = cartService.getCartsByUser(user.getId());
+        m.addAttribute("cartContents", cartItems);
+
+        if (!cartItems.isEmpty()) {
+            Double totalOrderPrice = cartItems.get(cartItems.size() - 1).getTotalOrderPrice();
+            m.addAttribute("totalOrderPrice", totalOrderPrice);
+            return "/user/cart";
+        } else {
+            m.addAttribute("msg", "Cart is currently empty !!");
+            return "message";
+        }
+    }
+
+    @GetMapping("/cartQuantityUpdate")
+    public String updateCartQuantity(@RequestParam String sy, @RequestParam Integer cid) {
+        cartService.updateQuantity(sy, cid);
+        return "redirect:/users/cart";
+    }
+
+    private Users getLoggedInUserDetails(Principal p) {
+        String email = p.getName();
+        return userService.getUserByEmail(email);
+    }
+
+    @GetMapping("/orders")
+    public String orderPage(Principal p, Model m) {
+        Users user = getLoggedInUserDetails(p);
+        List<CartItem> carts = cartService.getCartsByUser(user.getId());
+        if (!carts.isEmpty()) {
+            Double orderPrice = carts.get(carts.size() - 1).getTotalOrderPrice();
+            Double totalOrderPrice = orderPrice + 100 + 50;
+            m.addAttribute("orderPrice", orderPrice);
+            m.addAttribute("totalOrderPrice", totalOrderPrice);
+        }
+        return "/user/order";
+    }
+
+    @PostMapping("/save-order")
+    public String saveOrder(@ModelAttribute OrderRequestDTO request, Principal p) {
+        Users user = getLoggedInUserDetails(p);
+        orderService.saveOrder(user.getId(), request);
+        cartService.resetCart(user.getId());
+        return "redirect:/users/success";
+    }
+
+    @GetMapping("/success")
+    public String loadSuccess() {
+        return "/user/success";
+    }
+
+    @GetMapping("/user-orders")
+    public String myOrder(Model m, Principal p) {
+        Users loggedInUser = getLoggedInUserDetails(p);
+        List<ProductOrder> orders = orderService.getOrdersByUser(loggedInUser.getId());
+        m.addAttribute("orders", orders);
+
+        double totalOrderPrice = 0.0;
+        for (ProductOrder curProduct : orders) {
+            if (Objects.equals(curProduct.getStatus(), OrderStatus.CANCELLED.getName())) continue;
+            totalOrderPrice += curProduct.getPrice() * curProduct.getQuantity();
+        }
+        totalOrderPrice += 100 + 50;
+        m.addAttribute("totalOrderPrice", totalOrderPrice);
+        return "/user/my_orders";
+    }
+
+    @GetMapping("/update-status")
+    public String updateOrderStatus(@RequestParam Integer id, @RequestParam Integer st, HttpSession session, Principal p, Model m) {
+
+        OrderStatus[] values = OrderStatus.values();
+        String status = null;
+        for (OrderStatus curStatus : values) {
+            if (curStatus.getId().equals(st)) {
+                status = curStatus.getName();
+            }
+        }
+
+        Boolean updatedOrder = orderService.updateOrderStatus(id, status);
+        if (updatedOrder) {
+            session.setAttribute("succMsg", "Order status updated !!");
+        } else {
+            session.setAttribute("errorMsg", "Status not updated!! Internal Server Error");
+        }
+        return "redirect:/users/user-orders";
+    }
+
 }

@@ -21,7 +21,7 @@ public class CommonUtils {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message);
 
-        helper.setFrom("daspabitra55@gmail.com", "Shooping Cart");
+        helper.setFrom("daspabitra55@gmail.com", "Shooping CartItem");
         helper.setTo(recipientEmail);
 
         String content = "<p>Hello,</p>" +

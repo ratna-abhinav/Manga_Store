@@ -42,3 +42,12 @@
     background-color: #bd08aa;
     border-radius: 0.25rem;
 }
+
+navbar .nav-item .badge {
+    font-size: 0.75rem;
+    padding: 0.5em 0.6em;
+    border-radius: 50%;
+    color: white;
+    background-color: #ff9900;
+}
+

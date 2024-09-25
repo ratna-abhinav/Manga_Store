@@ -11,7 +11,7 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Cart {
+public class CartItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,4 +27,7 @@ public class Cart {
 
     @Transient
     private Double totalPrice;
+
+    @Transient
+    private Double totalOrderPrice;
 }

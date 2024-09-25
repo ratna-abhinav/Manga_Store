@@ -3,6 +3,7 @@ package com.example.shoppingdotcom.controller;
 import com.example.shoppingdotcom.model.Category;
 import com.example.shoppingdotcom.model.Product;
 import com.example.shoppingdotcom.model.Users;
+import com.example.shoppingdotcom.service.CartService;
 import com.example.shoppingdotcom.service.CategoryService;
 import com.example.shoppingdotcom.service.ProductService;
 import com.example.shoppingdotcom.service.UserService;
@@ -48,12 +49,17 @@ public class HomeController {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
+    @Autowired
+    private CartService cartService;
+
     @ModelAttribute
     public void getUserDetails(Principal p, Model m) {
         if (p != null) {
             String email = p.getName();
             Users currentUser = userService.getUserByEmail(email);
             m.addAttribute("users", currentUser);
+            Integer cartQuantity = cartService.getCountCart(currentUser.getId());
+            m.addAttribute("countCart", cartQuantity);
         }
         List<Category> activeCategories = categoryService.getAllActiveCategory();
         m.addAttribute("activeCategoriesSection", activeCategories);
@@ -102,7 +108,6 @@ public class HomeController {
             if (!file.isEmpty()) {
                 File saveFile = new ClassPathResource("static/img").getFile();
                 Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "profile_img" + File.separator + imageName);
-                System.out.println("Path = " + path);
                 Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
             }
             session.setAttribute("succMsg", "User registered successfully");
@@ -153,8 +158,6 @@ public class HomeController {
 
     @PostMapping("/reset-password")
     public String resetPassword(@RequestParam String token, @RequestParam String password, HttpSession session, Model m) {
-
-        System.out.println("Token = " + token);
 
         Users userByToken = userService.getUserByToken(token);
         if (ObjectUtils.isEmpty(userByToken)) {

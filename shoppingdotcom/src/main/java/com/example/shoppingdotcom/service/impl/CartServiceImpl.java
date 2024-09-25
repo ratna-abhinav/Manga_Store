@@ -1,6 +1,6 @@
 package com.example.shoppingdotcom.service.impl;
 
-import com.example.shoppingdotcom.model.Cart;
+import com.example.shoppingdotcom.model.CartItem;
 import com.example.shoppingdotcom.model.Product;
 import com.example.shoppingdotcom.model.Users;
 import com.example.shoppingdotcom.repository.CartRepository;
@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -26,29 +27,74 @@ public class CartServiceImpl implements CartService {
     private ProductRepository productRepository;
 
     @Override
-    public Cart saveCart(Integer productId, Integer userId) {
+    public CartItem saveCart(Integer productId, Integer userId) {
         Users user = userRepository.findById(userId).get();
         Product product = productRepository.findById(productId).get();
-
-        Cart cartStatus = cartRepository.findByProductIdAndUserId(productId, userId);
-        Cart cart = null;
+        CartItem cartStatus = cartRepository.findByProductIdAndUserId(productId, userId);
+        CartItem cartItem = null;
 
         if (ObjectUtils.isEmpty(cartStatus)) {
-            cart = new Cart();
-            cart.setProduct(product);
-            cart.setUser(user);
-            cart.setQuantity(1);
-            cart.setTotalPrice(1 * product.getDiscountedPrice());
+            cartItem = new CartItem();
+            cartItem.setProduct(product);
+            cartItem.setUser(user);
+            cartItem.setQuantity(1);
+            cartItem.setTotalPrice(1 * product.getDiscountedPrice());
         } else {
-            cart = cartStatus;
-            cart.setQuantity(cart.getQuantity() + 1);
-            cart.setTotalPrice(cart.getQuantity() * cart.getProduct().getDiscountedPrice());
+            cartItem = cartStatus;
+            cartItem.setQuantity(cartItem.getQuantity() + 1);
+            cartItem.setTotalPrice(cartItem.getQuantity() * cartItem.getProduct().getDiscountedPrice());
         }
-        return cartRepository.save(cart);
+        return cartRepository.save(cartItem);
     }
 
     @Override
-    public List<Cart> getCartsByUser(Integer userId) {
-        return List.of();
+    public List<CartItem> getCartsByUser(Integer userId) {
+        List<CartItem> cartContents = cartRepository.findByUserId(userId);
+        Double totalOrderPrice = 0.0;
+        List<CartItem> updatedCart = new ArrayList<>();
+
+        for (CartItem c : cartContents) {
+            Double totalPrice = (c.getProduct().getDiscountedPrice() * c.getQuantity());
+            c.setTotalPrice(totalPrice);
+            totalOrderPrice = totalOrderPrice + totalPrice;
+            c.setTotalOrderPrice(totalOrderPrice);
+            updatedCart.add(c);
+        }
+        return updatedCart;
+    }
+
+    @Override
+    public void resetCart(Integer userId) {
+        List<CartItem> cartContents = cartRepository.findByUserId(userId);
+        if (!cartContents.isEmpty()) {
+            for (CartItem c : cartContents) {
+                cartRepository.delete(c);
+            }
+        }
+    }
+
+    @Override
+    public Integer getCountCart(Integer userId) {
+        return cartRepository.countByUserId(userId);
+    }
+
+    @Override
+    public void updateQuantity(String sy, Integer cid) {
+        CartItem cartItem = cartRepository.findById(cid).get();
+        int updatedQuantity;
+
+        if (sy.equalsIgnoreCase("de")) {
+            updatedQuantity = cartItem.getQuantity() - 1;
+            if (updatedQuantity == 0) {
+                cartRepository.delete(cartItem);
+            } else {
+                cartItem.setQuantity(updatedQuantity);
+                cartRepository.save(cartItem);
+            }
+        } else {
+            updatedQuantity = cartItem.getQuantity() + 1;
+            cartItem.setQuantity(updatedQuantity);
+            cartRepository.save(cartItem);
+        }
     }
 }
