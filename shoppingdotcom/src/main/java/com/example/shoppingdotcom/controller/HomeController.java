@@ -1,5 +1,6 @@
 package com.example.shoppingdotcom.controller;
 
+import com.example.shoppingdotcom.model.CartItem;
 import com.example.shoppingdotcom.model.Category;
 import com.example.shoppingdotcom.model.Product;
 import com.example.shoppingdotcom.model.Users;

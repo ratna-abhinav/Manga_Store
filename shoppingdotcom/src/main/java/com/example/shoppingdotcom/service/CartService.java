@@ -1,6 +1,7 @@
 package com.example.shoppingdotcom.service;
 
 import com.example.shoppingdotcom.model.CartItem;
+import com.example.shoppingdotcom.model.Product;
 
 import java.util.List;
 
@@ -14,5 +15,7 @@ public interface CartService {
 
     public Integer getCountCart(Integer userId);
 
-    public void updateQuantity(String sy, Integer cid);
+    public Boolean updateQuantity(String sy, Integer cid);
+
+    CartItem getCurrentQuantity(Integer productId, Integer userId);
 }

@@ -1,10 +1,7 @@
 package com.example.shoppingdotcom.controller;
 
 import com.example.shoppingdotcom.model.*;
-import com.example.shoppingdotcom.service.CartService;
-import com.example.shoppingdotcom.service.CategoryService;
-import com.example.shoppingdotcom.service.OrderService;
-import com.example.shoppingdotcom.service.UserService;
+import com.example.shoppingdotcom.service.*;
 import com.example.shoppingdotcom.util.OrderStatus;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +30,9 @@ public class UserController {
     @Autowired
     private OrderService orderService;
 
+    @Autowired
+    private ProductService productService;
+
     @ModelAttribute
     public void getUserDetails(Principal p, Model m) {
         if (p != null) {
@@ -55,8 +55,14 @@ public class UserController {
     @GetMapping("/addCart")
     public String addToCart(@RequestParam Integer pid, @RequestParam Integer uid, HttpSession session) {
         try {
-            CartItem saveCartItem = cartService.saveCart(pid, uid);
+            CartItem cartQuantity = cartService.getCurrentQuantity(pid, uid);
+            Product curProduct = productService.getProductById(pid);
+            if (!ObjectUtils.isEmpty(cartQuantity) && cartQuantity.getQuantity() == curProduct.getStock()) {
+                session.setAttribute("errorMsg", "Cannot add more !!");
+                return "redirect:/product/" + pid;
+            }
 
+            CartItem saveCartItem = cartService.saveCart(pid, uid);
             if (ObjectUtils.isEmpty(saveCartItem)) {
                 session.setAttribute("errorMsg", "Failed to add the product !! Internal Server Error");
             } else {
@@ -85,8 +91,11 @@ public class UserController {
     }
 
     @GetMapping("/cartQuantityUpdate")
-    public String updateCartQuantity(@RequestParam String sy, @RequestParam Integer cid) {
-        cartService.updateQuantity(sy, cid);
+    public String updateCartQuantity(@RequestParam String sy, @RequestParam Integer cid, HttpSession session) {
+        Boolean updStatus = cartService.updateQuantity(sy, cid);
+        if (!updStatus) {
+            session.setAttribute("errorMsg", "Cannot add more !!");
+        }
         return "redirect:/users/cart";
     }
 
@@ -125,6 +134,10 @@ public class UserController {
     public String myOrder(Model m, Principal p) {
         Users loggedInUser = getLoggedInUserDetails(p);
         List<ProductOrder> orders = orderService.getOrdersByUser(loggedInUser.getId());
+        if (ObjectUtils.isEmpty(orders)) {
+            m.addAttribute("msg", "No Previous Orders !!");
+            return "message";
+        }
         m.addAttribute("orders", orders);
 
         double totalOrderPrice = 0.0;
@@ -147,7 +160,6 @@ public class UserController {
                 status = curStatus.getName();
             }
         }
-
         Boolean updatedOrder = orderService.updateOrderStatus(id, status);
         if (updatedOrder) {
             session.setAttribute("succMsg", "Order status updated !!");

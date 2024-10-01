@@ -7,6 +7,7 @@ import com.example.shoppingdotcom.repository.CartRepository;
 import com.example.shoppingdotcom.repository.ProductRepository;
 import com.example.shoppingdotcom.repository.UserRepository;
 import com.example.shoppingdotcom.service.CartService;
+import com.example.shoppingdotcom.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -26,11 +27,14 @@ public class CartServiceImpl implements CartService {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private ProductService productService;
+
     @Override
     public CartItem saveCart(Integer productId, Integer userId) {
         Users user = userRepository.findById(userId).get();
         Product product = productRepository.findById(productId).get();
-        CartItem cartStatus = cartRepository.findByProductIdAndUserId(productId, userId);
+        CartItem cartStatus = getCurrentQuantity(productId, userId);
         CartItem cartItem = null;
 
         if (ObjectUtils.isEmpty(cartStatus)) {
@@ -68,6 +72,9 @@ public class CartServiceImpl implements CartService {
         List<CartItem> cartContents = cartRepository.findByUserId(userId);
         if (!cartContents.isEmpty()) {
             for (CartItem c : cartContents) {
+                Product curProduct = productService.getProductById(c.getProduct().getId());
+                int newStock = curProduct.getStock() - c.getQuantity();
+                curProduct.setStock(newStock);
                 cartRepository.delete(c);
             }
         }
@@ -79,7 +86,7 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public void updateQuantity(String sy, Integer cid) {
+    public Boolean updateQuantity(String sy, Integer cid) {
         CartItem cartItem = cartRepository.findById(cid).get();
         int updatedQuantity;
 
@@ -92,9 +99,19 @@ public class CartServiceImpl implements CartService {
                 cartRepository.save(cartItem);
             }
         } else {
+            Product product = productService.getProductById(cartItem.getProduct().getId());
+            if (cartItem.getQuantity() == product.getStock()) {
+                return false;
+            }
             updatedQuantity = cartItem.getQuantity() + 1;
             cartItem.setQuantity(updatedQuantity);
             cartRepository.save(cartItem);
         }
+        return true;
+    }
+
+    @Override
+    public CartItem getCurrentQuantity(Integer productId, Integer userId) {
+        return cartRepository.findByProductIdAndUserId(productId, userId);
     }
 }

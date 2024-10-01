@@ -1,9 +1,6 @@
 package com.example.shoppingdotcom.service.impl;
 
-import com.example.shoppingdotcom.model.CartItem;
-import com.example.shoppingdotcom.model.OrderAddress;
-import com.example.shoppingdotcom.model.OrderRequestDTO;
-import com.example.shoppingdotcom.model.ProductOrder;
+import com.example.shoppingdotcom.model.*;
 import com.example.shoppingdotcom.repository.CartRepository;
 import com.example.shoppingdotcom.repository.ProductOrderRepository;
 import com.example.shoppingdotcom.service.OrderService;
@@ -13,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -56,11 +54,17 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Boolean updateOrderStatus(Integer id, String status) {
-        Optional<ProductOrder> curProductOrder = orderRepository.findById(id);
+    public Boolean updateOrderStatus(Integer orderId, String status) {
+        Optional<ProductOrder> curProductOrder = orderRepository.findById(orderId);
         if (curProductOrder.isPresent()) {
             ProductOrder updatedProductOrder = curProductOrder.get();
             updatedProductOrder.setStatus(status);
+            if (Objects.equals(status, OrderStatus.CANCELLED.getName())) {
+                Product product = curProductOrder.get().getProduct();
+                int curQuantity = curProductOrder.get().getQuantity();
+                int oldStock = product.getStock();
+                product.setStock(oldStock + curQuantity);
+            }
             orderRepository.save(updatedProductOrder);
             return true;
         }
