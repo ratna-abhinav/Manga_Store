@@ -8,20 +8,32 @@
 <body>
 <section>
     <div class="container-fluid mt-5 p-5">
+
+        <div class="row justify-content-center mb-2">
+            <div class="col-md-3">
+                <th:block th:if="${session.succMsg}">
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        [[${session.succMsg}]]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    <th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
+                </th:block>
+
+                <th:block th:if="${session.errorMsg}">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        [[${session.errorMsg}]]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    <th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
+                </th:block>
+            </div>
+        </div>
+
         <div class=" row justify-content-center bg-light rounded card-sh">
             <div class="col-md-7 p-4">
                 <div class="card card-sh border border-info">
                     <div class="card-header text-center bg-info-subtle bg-gradient">
                         <p class="fs-4 text-center m-auto">SIGNUP</p>
-                        <th:block th:if="${session.succMsg}">
-                            <p class="text-success fw-bold">[[${session.succMsg}]]</p>
-                            <th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
-                        </th:block>
-
-                        <th:block th:if="${session.errorMsg}">
-                            <p class="text-danger fw-bold">[[${session.errorMsg}]]</p>
-                            <th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
-                        </th:block>
                     </div>
                     <div class="card-body">
                         <form action="/saveUser" enctype="multipart/form-data" id="userRegister" novalidate method="post">

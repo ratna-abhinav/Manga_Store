@@ -5,9 +5,17 @@ import com.example.shoppingdotcom.repository.UserRepository;
 import com.example.shoppingdotcom.service.UserService;
 import com.example.shoppingdotcom.util.AppConstants;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -106,5 +114,34 @@ public class UserServiceImpl implements UserService {
     @Override
     public Users updateUser(Users user) {
         return userRepository.save(user);
+    }
+
+    @Override
+    public Users updateUserProfile(Users user, MultipartFile img) {
+
+        Users curUser = userRepository.findById(user.getId()).get();
+        if (!img.isEmpty()) {
+            curUser.setProfileImage(img.getOriginalFilename());
+        }
+        if (!ObjectUtils.isEmpty(curUser)) {
+            curUser.setName(user.getName());
+            curUser.setMobileNumber(user.getMobileNumber());
+            curUser.setAddress(user.getAddress());
+            curUser.setCity(user.getCity());
+            curUser.setState(user.getState());
+            curUser.setPincode(user.getPincode());
+            curUser = userRepository.save(curUser);
+        }
+
+        try {
+            if (!img.isEmpty()) {
+                File saveFile = new ClassPathResource("static/img").getFile();
+                Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "profile_img" + File.separator + img.getOriginalFilename());
+                Files.copy(img.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return curUser;
     }
 }

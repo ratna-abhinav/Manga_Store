@@ -1,6 +1,7 @@
 package com.example.shoppingdotcom.service;
 
 import com.example.shoppingdotcom.model.Users;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -26,4 +27,6 @@ public interface UserService {
     public Users getUserByToken(String token);
 
     public Users updateUser(Users user);
+
+    Users updateUserProfile(Users user, MultipartFile img);
 }

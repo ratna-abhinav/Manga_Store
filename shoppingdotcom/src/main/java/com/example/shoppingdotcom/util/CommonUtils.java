@@ -1,6 +1,8 @@
 package com.example.shoppingdotcom.util;
 
 import com.example.shoppingdotcom.model.ProductOrder;
+import com.example.shoppingdotcom.model.Users;
+import com.example.shoppingdotcom.service.UserService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,12 +12,16 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
+import java.security.Principal;
 
 @Component
 public class CommonUtils {
 
     @Autowired
     private JavaMailSender mailSender;
+
+    @Autowired
+    private UserService userService;
 
     public Boolean sendMail(String url, String recipientEmail) throws UnsupportedEncodingException, MessagingException {
 
@@ -80,5 +86,11 @@ public class CommonUtils {
         helper.setSubject("Your Order Status - Manga Store");
         helper.setText(msg, true);
         mailSender.send(message);
+    }
+
+    public Users getLoggedInUserDetails(Principal p) {
+        String email = p.getName();
+        Users user = userService.getUserByEmail(email);
+        return user;
     }
 }
