@@ -2,11 +2,11 @@ package com.example.shoppingdotcom.controller;
 
 import com.example.shoppingdotcom.model.Category;
 import com.example.shoppingdotcom.model.Product;
+import com.example.shoppingdotcom.model.ProductOrder;
 import com.example.shoppingdotcom.model.Users;
-import com.example.shoppingdotcom.service.CartService;
-import com.example.shoppingdotcom.service.CategoryService;
-import com.example.shoppingdotcom.service.ProductService;
-import com.example.shoppingdotcom.service.UserService;
+import com.example.shoppingdotcom.service.*;
+import com.example.shoppingdotcom.util.CommonUtils;
+import com.example.shoppingdotcom.util.OrderStatus;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -40,6 +40,12 @@ public class AdminController {
 
     @Autowired
     private CartService cartService;
+
+    @Autowired
+    private OrderService orderService;
+
+    @Autowired
+    private CommonUtils commonUtils;
 
     @ModelAttribute
     public void getUserDetails(Principal p, Model m) {
@@ -246,5 +252,38 @@ public class AdminController {
             session.setAttribute("errorMsg", "Account status not updated! Internal Server Error");
         }
         return "redirect:/admin/users";
+    }
+
+    @GetMapping("/orders")
+    public String getAllOrders(Model m) {
+        List<ProductOrder> allOrders = orderService.getAllOrders();
+        m.addAttribute("orders", allOrders);
+        return "/admin/orders";
+    }
+
+    @PostMapping("/update-order-status")
+    public String updateOrderStatus(@RequestParam Integer id, @RequestParam Integer st, HttpSession session) {
+
+        OrderStatus[] values = OrderStatus.values();
+        String status = null;
+
+        for (OrderStatus orderSt : values) {
+            if (orderSt.getId().equals(st)) {
+                status = orderSt.getName();
+            }
+        }
+
+        ProductOrder updateOrder = orderService.updateOrderStatus(id, status);
+        try {
+            commonUtils.sendMailForProductOrder(updateOrder, status);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (!ObjectUtils.isEmpty(updateOrder)) {
+            session.setAttribute("succMsg", "Order Status Updated !!");
+        } else {
+            session.setAttribute("errorMsg", "Status not updated. Internal Server Error !!");
+        }
+        return "redirect:/admin/orders";
     }
 }

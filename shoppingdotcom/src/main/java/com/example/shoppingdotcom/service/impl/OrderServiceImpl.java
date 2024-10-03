@@ -4,6 +4,7 @@ import com.example.shoppingdotcom.model.*;
 import com.example.shoppingdotcom.repository.CartRepository;
 import com.example.shoppingdotcom.repository.ProductOrderRepository;
 import com.example.shoppingdotcom.service.OrderService;
+import com.example.shoppingdotcom.util.CommonUtils;
 import com.example.shoppingdotcom.util.OrderStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,8 +24,11 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private CartRepository cartRepository;
 
+    @Autowired
+    private CommonUtils commonUtils;
+
     @Override
-    public void saveOrder(Integer userid, OrderRequestDTO orderRequest) {
+    public void saveOrder(Integer userid, OrderRequestDTO orderRequest) throws Exception {
 
         List<CartItem> carts = cartRepository.findByUserId(userid);
         for (CartItem cart : carts) {
@@ -44,7 +48,8 @@ public class OrderServiceImpl implements OrderService {
 
             OrderAddress address = getOrderAddress(orderRequest);
             order.setOrderAddress(address);
-            orderRepository.save(order);
+            ProductOrder productOrder = orderRepository.save(order);
+            commonUtils.sendMailForProductOrder(productOrder, "success");
         }
     }
 
@@ -54,7 +59,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Boolean updateOrderStatus(Integer orderId, String status) {
+    public ProductOrder updateOrderStatus(Integer orderId, String status) {
         Optional<ProductOrder> curProductOrder = orderRepository.findById(orderId);
         if (curProductOrder.isPresent()) {
             ProductOrder updatedProductOrder = curProductOrder.get();
@@ -65,10 +70,14 @@ public class OrderServiceImpl implements OrderService {
                 int oldStock = product.getStock();
                 product.setStock(oldStock + curQuantity);
             }
-            orderRepository.save(updatedProductOrder);
-            return true;
+            return orderRepository.save(updatedProductOrder);
         }
-        return false;
+        return null;
+    }
+
+    @Override
+    public List<ProductOrder> getAllOrders() {
+        return orderRepository.findAll();
     }
 
     private static OrderAddress getOrderAddress(OrderRequestDTO orderRequest) {

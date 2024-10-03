@@ -2,6 +2,7 @@ package com.example.shoppingdotcom.controller;
 
 import com.example.shoppingdotcom.model.*;
 import com.example.shoppingdotcom.service.*;
+import com.example.shoppingdotcom.util.CommonUtils;
 import com.example.shoppingdotcom.util.OrderStatus;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,9 @@ public class UserController {
 
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private CommonUtils commonUtils;
 
     @ModelAttribute
     public void getUserDetails(Principal p, Model m) {
@@ -118,7 +122,7 @@ public class UserController {
     }
 
     @PostMapping("/save-order")
-    public String saveOrder(@ModelAttribute OrderRequestDTO request, Principal p) {
+    public String saveOrder(@ModelAttribute OrderRequestDTO request, Principal p) throws Exception {
         Users user = getLoggedInUserDetails(p);
         orderService.saveOrder(user.getId(), request);
         cartService.resetCart(user.getId());
@@ -160,11 +164,17 @@ public class UserController {
                 status = curStatus.getName();
             }
         }
-        Boolean updatedOrder = orderService.updateOrderStatus(id, status);
-        if (updatedOrder) {
-            session.setAttribute("succMsg", "Order status updated !!");
+        ProductOrder updatedOrder = orderService.updateOrderStatus(id, status);
+        try {
+            commonUtils.sendMailForProductOrder(updatedOrder, status);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (!ObjectUtils.isEmpty(updatedOrder)) {
+            session.setAttribute("succMsg", "Order Status Updated !!");
         } else {
-            session.setAttribute("errorMsg", "Status not updated!! Internal Server Error");
+            session.setAttribute("errorMsg", "Status not updated. Internal Server Error !!");
         }
         return "redirect:/users/user-orders";
     }
