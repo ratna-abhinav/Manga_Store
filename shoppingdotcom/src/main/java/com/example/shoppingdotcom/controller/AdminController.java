@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,6 +25,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -196,8 +198,14 @@ public class AdminController {
     }
 
     @GetMapping("/products")
-    public String loadViewProduct(Model m) {
-        m.addAttribute("products", productService.getAllProducts());
+    public String loadViewProduct(Model m, @RequestParam(defaultValue = "") String keyword) {
+        List<Product> products = null;
+        if (StringUtils.hasText(keyword)) {
+            products = productService.searchProductAdmin(keyword);
+        } else {
+            products = productService.getAllProducts();
+        }
+        m.addAttribute("products", products);
         return "admin/products";
     }
 
@@ -254,10 +262,21 @@ public class AdminController {
     }
 
     @GetMapping("/orders")
-    public String getAllOrders(Model m) {
-        List<ProductOrder> allOrders = orderService.getAllOrders();
+    public String getAllOrders(Model m, @RequestParam(defaultValue = "") String orderId, HttpSession session) {
+
+        List<ProductOrder> allOrders = new ArrayList<>();
+        if (StringUtils.hasText(orderId)) {
+            ProductOrder curOrder = orderService.getOrdersByOrderId(orderId.trim());
+            if (ObjectUtils.isEmpty(curOrder)) {
+                session.setAttribute("errorMsg", "No such OrderID present !!");
+            } else {
+                allOrders.add(curOrder);
+            }
+        } else {
+            allOrders = orderService.getAllOrders();
+        }
         m.addAttribute("orders", allOrders);
-        return "/admin/orders";
+        return "admin/orders";
     }
 
     @PostMapping("/update-order-status")

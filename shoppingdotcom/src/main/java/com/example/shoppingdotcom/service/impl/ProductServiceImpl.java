@@ -1,6 +1,8 @@
 package com.example.shoppingdotcom.service.impl;
 
+import com.example.shoppingdotcom.model.Category;
 import com.example.shoppingdotcom.model.Product;
+import com.example.shoppingdotcom.repository.CategoryRepository;
 import com.example.shoppingdotcom.repository.ProductRepository;
 import com.example.shoppingdotcom.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     @Override
     public Product saveProduct(Product product) {
@@ -87,10 +92,27 @@ public class ProductServiceImpl implements ProductService {
     public List<Product> getAllActiveProducts(String category) {
         List<Product> products = null;
         if (ObjectUtils.isEmpty(category)) {
-            products = productRepository.findByIsActiveTrue();
+            List<Category> activeCategories = categoryRepository.findByIsActiveTrue();
+            for (Category curCategory : activeCategories) {
+                List<Product> curCategoryProducts = productRepository.findByIsActiveTrueAndCategory(curCategory.getName());
+                if (!ObjectUtils.isEmpty(curCategoryProducts)) {
+                    if (products == null) products = curCategoryProducts;
+                    else products.addAll(curCategoryProducts);
+                }
+            }
         } else {
             products = productRepository.findByIsActiveTrueAndCategory(category);
         }
         return products;
+    }
+
+    @Override
+    public List<Product> searchProduct(String keyword) {
+        return productRepository.findByIsActiveTrueAndTitleContainingIgnoreCaseOrIsActiveTrueAndCategoryContainingIgnoreCase(keyword, keyword);
+    }
+
+    @Override
+    public List<Product> searchProductAdmin(String keyword) {
+        return productRepository.findByTitleContainingIgnoreCaseOrCategoryContainingIgnoreCase(keyword, keyword);
     }
 }

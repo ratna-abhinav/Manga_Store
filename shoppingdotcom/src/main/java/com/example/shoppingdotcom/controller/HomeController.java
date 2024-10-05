@@ -171,4 +171,14 @@ public class HomeController {
         }
         return "message";
     }
+
+    @GetMapping("/search")
+    public String searchProduct(@RequestParam String keyword, Model m) {
+        List<Product> searchProducts = productService.searchProduct(keyword);
+        m.addAttribute("products", searchProducts);
+        List<Category> categories = categoryService.getAllActiveCategory();
+        m.addAttribute("categories", categories);
+        return "product";
+
+    }
 }

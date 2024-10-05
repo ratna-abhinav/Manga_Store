@@ -9,28 +9,39 @@
 <section>
     <div class="container-fluid mt-5">
         <div class="row">
-            <div class="col-md-12 d-flex align-items-center mt-2 p-2 justify-content-center bg-body-secondary">
+            <div class="col-md-12 d-flex align-items-center mt-4 p-2 justify-content-center bg-body-secondary">
                 <i class="fa-solid fa-folder" style="color: salmon; margin-right: 10px; font-size: 1.5rem;"></i>
                 <p class="fs-3 mb-0 fw-bold text-success"> All Orders</p>
             </div>
             <hr>
             <a href="/admin/" class="text-decoration-none"><i class="fa-solid fa-arrow-left" style="margin-left: 10px"></i> Back</a>
-            <div class="col-md-12">
-                <th:block th:if="${session.succMsg}">
-                    <p class="text-success fw-bold text-center">[[${session.succMsg}]]</p>
-                    <th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
-                </th:block>
-                <th:block th:if="${session.errorMsg}">
-                    <p class="text-danger fw-bold text-center">[[${session.errorMsg}]]</p>
-                    <th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
-                </th:block>
+
+
+            <div class="row justify-content-center mb-2">
+                <div class="col-md-3">
+                    <th:block th:if="${session.succMsg}">
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            [[${session.succMsg}]]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        <th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
+                    </th:block>
+
+                    <th:block th:if="${session.errorMsg}">
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            [[${session.errorMsg}]]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        <th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
+                    </th:block>
+                </div>
             </div>
 
             <div class="col-md-5 p-4 offset-md-3">
-                <form>
+                <form action="/admin/orders" method="get">
                     <div class="row">
                         <div class="input-group">
-                            <input type="text" class="form-control rounded border border-success custom-hover" name="" placeholder="Enter Order ID">
+                            <input type="text" class="form-control rounded border border-success custom-hover" name="orderId" placeholder="Enter Order ID">
                             <button class="btn btn-light text-dark ms-4 col-md-2 rounded border border-success custom-hover">
                                 <i class="fa-solid fa-magnifying-glass"></i> Search
                             </button>
@@ -41,7 +52,7 @@
 
             <div class="col-md-12 ps-4 pe-4 table-responsive mb-4">
                 <table class="table table-bordered table-striped card-sh">
-                    <thead>
+                    <thead class="table-danger">
                     <tr>
                         <th scope="col">Order Id</th>
                         <th scope="col">Delivery Details</th>
@@ -53,51 +64,52 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="o:${orders}">
-                        <th scope="row">[[${o.orderId}]]</th>
-                        <td>
-                            Name : [[${o.orderAddress.firstName+'
-                            '+o.orderAddress.lastName}]]<br> Email :
-                            [[${o.orderAddress.email}]] <br> Mobile:
-                            [[${o.orderAddress.mobileNo}]] <br> Address :
-                            [[${o.orderAddress.address}]] <br> City :
-                            [[${o.orderAddress.city}]] <br> State :
-                            [[${o.orderAddress.state}]], [[${o.orderAddress.pincode}]]
-                        </td>
-                        <td>[[${o.orderDate}]]</td>
-                        <td>[[${o.product.title}]]</td>
-                        <td>Quantity : [[${o.quantity}]] <br>Price :
-                            &#8377;[[${o.price}]] <br>Total Price : &#8377;[[${o.quantity * o.price}]]
-                        </td>
-                        <td>[[${o.status}]]</td>
-                        <td>
-                            <form action="/admin/update-order-status" method="post">
-                                <div class="row">
-                                    <div class="col">
-                                        <select required class="form-control" name="st">
-                                            <option value="">--Select--</option>
-                                            <option value="1">In Progress</option>
-                                            <option value="2">Order Received</option>
-                                            <option value="3">Product Packed</option>
-                                            <option value="4">Out for Delivery</option>
-                                            <option value="5">Delivered</option>
-                                            <option value="6">Cancelled</option>
-                                        </select>
-                                    </div>
 
-                                    <input th:value="${o.id}" name="id" type="hidden">
-                                    <div class="col d-flex align-items-center">
-                                        <th:block th:if="${o.status=='Cancelled' || o.status=='Delivered'}">
-                                            <button class="btn btn-success btn-sm disabled"> Update</button>
-                                        </th:block>
-                                        <th:block th:unless="${o.status=='Cancelled' || o.status=='Delivered'}">
-                                            <button  class="btn btn-sm btn-success"> Update</button>
-                                        </th:block>
-                                    </div>
-                                </div>
-                            </form>
-                        </td>
-                    </tr>
+                            <tr th:each="o:${orders}">
+                                <th scope="row">[[${o.orderId}]]</th>
+                                <td>
+                                    Name : [[${o.orderAddress.firstName+'
+                                    '+o.orderAddress.lastName}]]<br> Email :
+                                    [[${o.orderAddress.email}]] <br> Mobile:
+                                    [[${o.orderAddress.mobileNo}]] <br> Address :
+                                    [[${o.orderAddress.address}]] <br> City :
+                                    [[${o.orderAddress.city}]] <br> State :
+                                    [[${o.orderAddress.state}]], [[${o.orderAddress.pincode}]]
+                                </td>
+                                <td>[[${o.orderDate}]]</td>
+                                <td>[[${o.product.title}]]</td>
+                                <td>Quantity : [[${o.quantity}]] <br>Price :
+                                    &#8377;[[${o.price}]] <br>Total Price : &#8377;[[${o.quantity * o.price}]]
+                                </td>
+                                <td>[[${o.status}]]</td>
+                                <td>
+                                    <form action="/admin/update-order-status" method="post">
+                                        <div class="row">
+                                            <div class="col">
+                                                <select required class="form-control" name="st">
+                                                    <option value="">--Select--</option>
+                                                    <option value="1">In Progress</option>
+                                                    <option value="2">Order Received</option>
+                                                    <option value="3">Product Packed</option>
+                                                    <option value="4">Out for Delivery</option>
+                                                    <option value="5">Delivered</option>
+                                                    <option value="6">Cancelled</option>
+                                                </select>
+                                            </div>
+
+                                            <input th:value="${o.id}" name="id" type="hidden">
+                                            <div class="col d-flex align-items-center">
+                                                <th:block th:if="${o.status=='Cancelled' || o.status=='Delivered'}">
+                                                    <button class="btn btn-success btn-sm disabled"> Update</button>
+                                                </th:block>
+                                                <th:block th:unless="${o.status=='Cancelled' || o.status=='Delivered'}">
+                                                    <button  class="btn btn-sm btn-success"> Update</button>
+                                                </th:block>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </td>
+                            </tr>
                     </tbody>
                 </table>
             </div>

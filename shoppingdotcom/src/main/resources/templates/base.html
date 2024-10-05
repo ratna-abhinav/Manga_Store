@@ -98,8 +98,8 @@
                             <a class="nav-link dropdown-toggle active d-flex align-items-center" href="#" role="button"
                                data-bs-toggle="dropdown" aria-expanded="false">
                                 <th:block th:if="${users.profileImage != null}">
-                                    <img class="rounded-circle object-fit-cover border border-success" th:src="@{'../img/profile_img/'+${users.profileImage}}" width="40px"
-                                         height="40px" alt="">
+                                    <img class="rounded-circle object-fit-cover border border-success" th:src="@{'/img/profile_img/'+${users.profileImage}}" width="40px"
+                                         height="40px" alt="No Img">
                                 </th:block>
                                 <th:block th:if="${users.profileImage == null}">
                                     <i class="fa-solid fa-user-tie" style="font-size: 1.5rem; color: gold"></i>

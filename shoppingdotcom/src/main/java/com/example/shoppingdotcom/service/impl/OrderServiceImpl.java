@@ -100,4 +100,9 @@ public class OrderServiceImpl implements OrderService {
         } while (orderRepository.existsByOrderId(orderId));
         return orderId;
     }
+
+    @Override
+    public ProductOrder getOrdersByOrderId(String orderId) {
+        return orderRepository.findByOrderId(orderId);
+    }
 }
