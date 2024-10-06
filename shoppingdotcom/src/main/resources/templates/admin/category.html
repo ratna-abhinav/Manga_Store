@@ -68,7 +68,7 @@
                             </thead>
                             <tbody>
                             <tr th:each="cat,c:${categories}">
-                                <th scope="row">[[${c.count}]]</th>
+                                <th scope="row">[[${(pageNo * pageSize) + c.count}]]</th>
                                 <td>[[${cat.name}]]</td>
                                 <td>[[${cat.isActive}]]</td>
                                 <td>
@@ -84,8 +84,39 @@
                             </tbody>
                         </table>
                     </div>
-                </div>
 
+                    <div class="row">
+                        <div class="col-md-12">
+                            <nav aria-label="Page navigation example">
+                                <ul class="pagination justify-content-center">
+                                    <li class="page-item"
+                                        th:classappend="${isFirst} ? 'disabled':''">
+                                        <a class="page-link" th:href="@{'/admin/category?pageNo='+${pageNo-1}}" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+
+                                    <li th:each="i:${#numbers.sequence(1,totalPages)}"
+                                        class="page-item"
+                                        th:classappend="${pageNo+1==i}?'active':''">
+                                        <a class="page-link" th:href="@{'/admin/category?pageNo='+${i-1}}">[[${i}]]</a>
+                                    </li>
+
+                                    <li class="page-item"
+                                        th:classappend="${isLast} ? 'disabled':''">
+                                        <a class="page-link" th:href="@{'/admin/category?pageNo='+${pageNo+1}}" aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                        <div class="col ms-3 mb-3">Total Category :
+                            [[${totalElements}]]
+                        </div>
+                    </div>
+
+                </div>
             </div>
 
         </div>

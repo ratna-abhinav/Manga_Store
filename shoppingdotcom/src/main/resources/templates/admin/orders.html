@@ -64,7 +64,6 @@
                     </tr>
                     </thead>
                     <tbody>
-
                             <tr th:each="o:${orders}">
                                 <th scope="row">[[${o.orderId}]]</th>
                                 <td>
@@ -112,6 +111,47 @@
                             </tr>
                     </tbody>
                 </table>
+
+
+
+                <!-- Pagination Section -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <th:block th:if="${productsSize > 0}">
+                            <nav aria-label="Page navigation example">
+                                <ul class="pagination justify-content-center">
+                                    <li class="page-item" th:classappend="${isFirst} ? 'disabled':''">
+                                        <a class="page-link"
+                                           th:href="@{'/admin/orders?pageNo=' + (${pageNo - 1})}">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+
+                                    <li th:each="i:${#numbers.sequence(1,totalPages)}"
+                                        class="page-item" th:classappend="${pageNo+1==i}?'active':''">
+                                        <a class="page-link"
+                                           th:href="@{'/admin/orders?pageNo='+${i-1}}">[[${i}]]</a>
+                                    </li>
+
+                                    <li class="page-item"
+                                        th:classappend="${isLast} ? 'disabled':''">
+                                        <a class="page-link"
+                                           th:href="@{'/admin/orders?pageNo='+${pageNo+1}}"
+                                           aria-label="Next"> <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </th:block>
+                    </div>
+                    <div class="col mb-2">
+                        Total Products: [[${totalElements}]]
+                    </div>
+                </div>
+
+
+
+
             </div>
         </div>
 

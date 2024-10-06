@@ -69,25 +69,30 @@
                     </div>
                 </div>
 
-                <!-- Start Pagination -->
+                <!-- Pagination Section -->
                 <div class="row">
                     <div class="col-md-12">
-                        <th:block th:if="${productsSize>0}">
+                        <th:block th:if="${productsSize > 0}">
                             <nav aria-label="Page navigation example">
                                 <ul class="pagination justify-content-center">
                                     <li class="page-item" th:classappend="${isFirst} ? 'disabled':''">
-                                        <a class="page-link" th:href="@{'/products?pageNo='+${pageNo-1}}" aria-label="Previous">
+                                        <a class="page-link"
+                                           th:href="@{'/products?pageNo=' + (${pageNo - 1}) + '&keyword=' + ${keyword} + '&category=' + ${paramValue}}">
                                             <span aria-hidden="true">&laquo;</span>
                                         </a>
                                     </li>
 
-                                    <li th:each="i:${#numbers.sequence(1,totalPages)}" class="page-item" th:classappend="${pageNo+1==i}?'active':''">
-                                        <a class="page-link" th:href="@{'/products?pageNo='+${i-1}}">[[${i}]]</a>
+                                    <li th:each="i:${#numbers.sequence(1,totalPages)}"
+                                        class="page-item" th:classappend="${pageNo+1==i}?'active':''">
+                                        <a class="page-link"
+                                              th:href="@{'/products?pageNo='+${i-1} + '&keyword=' + ${keyword} + '&category=' + ${paramValue}}">[[${i}]]</a>
                                     </li>
 
-                                    <li class="page-item" th:classappend="${isLast} ? 'disabled':''">
-                                        <a class="page-link" th:href="@{'/products?pageNo='+${pageNo+1}}" aria-label="Next">
-                                            <span aria-hidden="true">&raquo;</span>
+                                    <li class="page-item"
+                                        th:classappend="${isLast} ? 'disabled':''">
+                                        <a class="page-link"
+                                            th:href="@{'/products?pageNo='+${pageNo+1} + '&keyword=' + ${keyword} + '&category=' + ${paramValue}}"
+                                            aria-label="Next"> <span aria-hidden="true">&raquo;</span>
                                         </a>
                                     </li>
                                 </ul>
@@ -95,11 +100,9 @@
                         </th:block>
                     </div>
                     <div class="col mb-2">
-                        Total Products : [[${totalElements}]]
+                        Total Products: [[${totalElements}]]
                     </div>
                 </div>
-
-
             </div>
         </div>
     </div>

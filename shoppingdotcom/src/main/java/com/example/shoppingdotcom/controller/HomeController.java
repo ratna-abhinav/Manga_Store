@@ -86,15 +86,16 @@ public class HomeController {
     @GetMapping("/products")
     public String listAllProducts(Model m, @RequestParam(value = "category", defaultValue = "") String category,
                                   @RequestParam(name = "pageNo", defaultValue = "0") Integer pageNo,
-                                  @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize, @RequestParam(defaultValue = "") String keyword) {
+                                  @RequestParam(name = "pageSize", defaultValue = "12") Integer pageSize,
+                                  @RequestParam(name = "keyword", defaultValue = "") String keyword) {
 
         List<Category> categories = categoryService.getAllActiveCategory();
         m.addAttribute("categories", categories);
         m.addAttribute("paramValue", category);
+        m.addAttribute("keyword", keyword);
 
         Page<Product> page = null;
         if (StringUtils.hasText(keyword)) {
-            System.out.println("Enter search Pagination");
             page = productService.searchProductPagination(pageNo, pageSize, keyword);
         } else {
             page = productService.getAllActiveProductPagination(pageNo, pageSize, category);
