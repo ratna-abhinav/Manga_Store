@@ -7,6 +7,10 @@ import com.example.shoppingdotcom.repository.ProductRepository;
 import com.example.shoppingdotcom.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -38,6 +43,12 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public Page<Product> getAllProductsPagination(Integer pageNo, Integer pageSize) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        return productRepository.findAll(pageable);
+    }
+
+    @Override
     public Boolean deleteProduct(Integer id) {
         Product product = productRepository.findById(id).orElse(null);
 
@@ -51,6 +62,11 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Product getProductById(Integer id) {
         return productRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public List<Product> getProductsByCategory(String category) {
+        return productRepository.findByCategory(category);
     }
 
     @Override
@@ -115,4 +131,49 @@ public class ProductServiceImpl implements ProductService {
     public List<Product> searchProductAdmin(String keyword) {
         return productRepository.findByTitleContainingIgnoreCaseOrCategoryContainingIgnoreCase(keyword, keyword);
     }
+
+    @Override
+    public Page<Product> searchProductPagination(Integer pageNo, Integer pageSize, String keyword) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        return productRepository.findByIsActiveTrueAndTitleContainingIgnoreCaseOrIsActiveTrueAndCategoryContainingIgnoreCase(keyword, keyword, pageable);
+    }
+
+    @Override
+    public Page<Product> searchProductAdminPagination(Integer pageNo, Integer pageSize, String keyword) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        return productRepository.findByTitleContainingIgnoreCaseOrCategoryContainingIgnoreCase(keyword, keyword, pageable);
+    }
+
+
+    @Override
+    public Page<Product> getAllActiveProductPagination(Integer pageNo, Integer pageSize, String category) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        Page<Product> productsPage;
+
+        if (ObjectUtils.isEmpty(category)) {
+            List<Product> allProducts = new ArrayList<>();
+            List<Category> activeCategories = categoryRepository.findByIsActiveTrue();
+
+            for (Category curCategory : activeCategories) {
+                Page<Product> curCategoryProductsPage = productRepository.findByIsActiveTrueAndCategory(curCategory.getName(), Pageable.unpaged());
+                if (!curCategoryProductsPage.isEmpty()) {
+                    allProducts.addAll(curCategoryProductsPage.getContent());
+                }
+            }
+            int start = (int) pageable.getOffset();
+            int end = Math.min((start + pageSize), allProducts.size());
+
+            List<Product> paginatedProducts;
+            if (start > allProducts.size()) {
+                paginatedProducts = new ArrayList<>();
+            } else {
+                paginatedProducts = allProducts.subList(start, end);
+            }
+            productsPage = new PageImpl<>(paginatedProducts, pageable, allProducts.size());
+        } else {
+            productsPage = productRepository.findByIsActiveTrueAndCategory(category, pageable);
+        }
+        return productsPage;
+    }
+
 }

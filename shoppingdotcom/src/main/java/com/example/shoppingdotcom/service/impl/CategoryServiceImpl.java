@@ -4,6 +4,9 @@ import com.example.shoppingdotcom.model.Category;
 import com.example.shoppingdotcom.repository.CategoryRepository;
 import com.example.shoppingdotcom.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -42,13 +45,17 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Category getCategoryById(int id) {
-        Category category = categoryRepository.findById(id).orElse(null);
-        return category;
+        return categoryRepository.findById(id).orElse(null);
     }
 
     @Override
     public List<Category> getAllActiveCategory() {
-        List<Category> categories = categoryRepository.findByIsActiveTrue();
-        return categories;
+        return categoryRepository.findByIsActiveTrue();
+    }
+
+    @Override
+    public Page<Category> getAllCategoryPagination(Integer pageNo, Integer pageSize) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        return categoryRepository.findAll(pageable);
     }
 }

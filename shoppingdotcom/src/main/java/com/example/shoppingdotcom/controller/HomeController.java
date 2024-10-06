@@ -14,10 +14,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Page;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -82,12 +84,34 @@ public class HomeController {
     }
 
     @GetMapping("/products")
-    public String listAllProducts(Model m, @RequestParam(value = "category", defaultValue = "") String category) {
+    public String listAllProducts(Model m, @RequestParam(value = "category", defaultValue = "") String category,
+                                  @RequestParam(name = "pageNo", defaultValue = "0") Integer pageNo,
+                                  @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize, @RequestParam(defaultValue = "") String keyword) {
+
         List<Category> categories = categoryService.getAllActiveCategory();
-        List<Product> products = productService.getAllActiveProducts(category);
         m.addAttribute("categories", categories);
-        m.addAttribute("products", products);
         m.addAttribute("paramValue", category);
+
+        Page<Product> page = null;
+        if (StringUtils.hasText(keyword)) {
+            System.out.println("Enter search Pagination");
+            page = productService.searchProductPagination(pageNo, pageSize, keyword);
+        } else {
+            page = productService.getAllActiveProductPagination(pageNo, pageSize, category);
+        }
+
+        List<Product> products = page.getContent();
+
+        m.addAttribute("products", products);
+        m.addAttribute("productsSize", products.size());
+
+        m.addAttribute("pageNo", page.getNumber());
+        m.addAttribute("pageSize", pageSize);
+        m.addAttribute("totalElements", page.getTotalElements());
+        m.addAttribute("totalPages", page.getTotalPages());
+        m.addAttribute("isFirst", page.isFirst());
+        m.addAttribute("isLast", page.isLast());
+
         return "product";
     }
 
@@ -167,18 +191,8 @@ public class HomeController {
             userByToken.setPassword(passwordEncoder.encode(password));
             userByToken.setResetToken(null);
             userService.updateUser(userByToken);
-            m.addAttribute("msg","Password changed successfully !!");
+            m.addAttribute("msg", "Password changed successfully !!");
         }
         return "message";
-    }
-
-    @GetMapping("/search")
-    public String searchProduct(@RequestParam String keyword, Model m) {
-        List<Product> searchProducts = productService.searchProduct(keyword);
-        m.addAttribute("products", searchProducts);
-        List<Category> categories = categoryService.getAllActiveCategory();
-        m.addAttribute("categories", categories);
-        return "product";
-
     }
 }

@@ -10,6 +10,7 @@ import com.example.shoppingdotcom.util.OrderStatus;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Page;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,6 +28,7 @@ import java.nio.file.StandardCopyOption;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Controller
 @RequestMapping("/admin")
@@ -84,8 +86,20 @@ public class AdminController {
     }
 
     @GetMapping("/category")
-    public String category(Model m) {
-        m.addAttribute("categories", categoryService.getAllCategory());
+    public String category(Model m, @RequestParam(name = "pageNo", defaultValue = "0") Integer pageNo,
+                           @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
+
+        Page<Category> page = categoryService.getAllCategoryPagination(pageNo, pageSize);
+        List<Category> categories = page.getContent();
+        m.addAttribute("categories", categories);
+
+        m.addAttribute("pageNo", page.getNumber());
+        m.addAttribute("pageSize", pageSize);
+        m.addAttribute("totalElements", page.getTotalElements());
+        m.addAttribute("totalPages", page.getTotalPages());
+        m.addAttribute("isFirst", page.isFirst());
+        m.addAttribute("isLast", page.isLast());
+
         return "admin/category";
     }
 
@@ -159,6 +173,12 @@ public class AdminController {
         if (!ObjectUtils.isEmpty(category)) {
             prevCategory.setName(category.getName());
             prevCategory.setIsActive(category.getIsActive());
+            if (!category.getIsActive()) {
+                List<Product> products = productService.getProductsByCategory(category.getName());
+                for (Product curProduct : products) {
+                    curProduct.setIsActive(false);
+                }
+            }
             prevCategory.setImageName(imageName);
         }
 
@@ -183,6 +203,19 @@ public class AdminController {
         product.setImage(imageName);
         product.setDiscount(0);
         product.setDiscountedPrice(product.getPrice());
+        List<Category> activeCategories = categoryService.getAllActiveCategory();
+        boolean isPresent = false;
+        for (Category curCategory : activeCategories) {
+            if (Objects.equals(curCategory.getName(), product.getCategory())) {
+                isPresent = true;
+                break;
+            }
+        }
+        String successMsg = "Product saved successfully !!";
+        if (!isPresent && product.getIsActive()) {
+            product.setIsActive(false);
+            successMsg = "Saved !! Status set to Inactive as category is inactive";
+        }
 
         Product saveProduct = productService.saveProduct(product);
         if (!ObjectUtils.isEmpty(saveProduct)) {
@@ -190,7 +223,7 @@ public class AdminController {
             Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "product_img" + File.separator + imageName);
 
             Files.copy(image.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-            session.setAttribute("succMsg", "Product saved successfully");
+            session.setAttribute("succMsg", successMsg);
         } else {
             session.setAttribute("errorMsg", "Product not saved! Internal Server error");
         }
@@ -198,14 +231,22 @@ public class AdminController {
     }
 
     @GetMapping("/products")
-    public String loadViewProduct(Model m, @RequestParam(defaultValue = "") String keyword) {
-        List<Product> products = null;
+    public String loadViewProduct(Model m, @RequestParam(defaultValue = "") String keyword, @RequestParam(name = "pageNo", defaultValue = "0") Integer pageNo,
+                                  @RequestParam(name = "pageSize", defaultValue = "12") Integer pageSize) {
+
+        Page<Product> page = null;
         if (StringUtils.hasText(keyword)) {
-            products = productService.searchProductAdmin(keyword);
+            page = productService.searchProductAdminPagination(pageNo, pageSize, keyword);
         } else {
-            products = productService.getAllProducts();
+            page = productService.getAllProductsPagination(pageNo, pageSize);
         }
-        m.addAttribute("products", products);
+        m.addAttribute("products", page.getContent());
+        m.addAttribute("pageNo", page.getNumber());
+        m.addAttribute("pageSize", pageSize);
+        m.addAttribute("totalElements", page.getTotalElements());
+        m.addAttribute("totalPages", page.getTotalPages());
+        m.addAttribute("isFirst", page.isFirst());
+        m.addAttribute("isLast", page.isLast());
         return "admin/products";
     }
 
@@ -233,9 +274,24 @@ public class AdminController {
         if (product.getDiscount() < 0 || product.getDiscount() > 100) {
             session.setAttribute("errorMsg", "invalid Discount!");
         } else {
+            List<Category> activeCategories = categoryService.getAllActiveCategory();
+            boolean isPresent = false;
+            for (Category curCategory : activeCategories) {
+                if (Objects.equals(curCategory.getName(), product.getCategory())) {
+                    isPresent = true;
+                    break;
+                }
+            }
+
+            String successMsg = "Product updated successfully !!";
+            if (!isPresent && product.getIsActive()) {
+                product.setIsActive(false);
+                successMsg = "Updated !! Status set to Inactive as category is inactive";
+            }
+
             Product updateProduct = productService.updateProduct(product, image);
             if (!ObjectUtils.isEmpty(updateProduct)) {
-                session.setAttribute("succMsg", "Product successfully updated");
+                session.setAttribute("succMsg", successMsg);
             } else {
                 session.setAttribute("errorMsg", "Product not updated! Internal server error");
             }

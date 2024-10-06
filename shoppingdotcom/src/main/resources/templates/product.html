@@ -11,7 +11,7 @@
     <div class="container-fluid bg-danger-subtle p-4 mt-5">
         <div class="row">
             <div class="col-md-8 offset-md-2 mt-4">
-                <form action="/search" method="get">
+                <form action="/products" method="get">
                     <div class="input-group">
                         <input type="text" class="form-control rounded border border-success custom-hover" name="keyword">
                         <button class="btn btn-light text-dark ms-4 col-md-2 rounded border border-success custom-hover">
@@ -44,7 +44,7 @@
                     <div class="card-body">
                         <p class="fs-3 text-center">Products</p>
                         <div class="row">
-                            <th:block th:if="${products.size >0}">
+                            <th:block th:if="${#lists.size(products) > 0}">
                                 <div class="col-md-3 mb-4" th:each="p:${products}">
                                     <div class="card border border-info-subtle">
                                         <div class="card-body ">
@@ -62,12 +62,44 @@
                                     </div>
                                 </div>
                             </th:block>
-                            <th:block th:unless="${products.size>0}">
+                            <th:block th:unless="${#lists.size(products) > 0}">
                                 <p class="fs-4 text-center mt-4 text-danger">Currently, no products available!</p>
                             </th:block>
                         </div>
                     </div>
                 </div>
+
+                <!-- Start Pagination -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <th:block th:if="${productsSize>0}">
+                            <nav aria-label="Page navigation example">
+                                <ul class="pagination justify-content-center">
+                                    <li class="page-item" th:classappend="${isFirst} ? 'disabled':''">
+                                        <a class="page-link" th:href="@{'/products?pageNo='+${pageNo-1}}" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+
+                                    <li th:each="i:${#numbers.sequence(1,totalPages)}" class="page-item" th:classappend="${pageNo+1==i}?'active':''">
+                                        <a class="page-link" th:href="@{'/products?pageNo='+${i-1}}">[[${i}]]</a>
+                                    </li>
+
+                                    <li class="page-item" th:classappend="${isLast} ? 'disabled':''">
+                                        <a class="page-link" th:href="@{'/products?pageNo='+${pageNo+1}}" aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </th:block>
+                    </div>
+                    <div class="col mb-2">
+                        Total Products : [[${totalElements}]]
+                    </div>
+                </div>
+
+
             </div>
         </div>
     </div>
