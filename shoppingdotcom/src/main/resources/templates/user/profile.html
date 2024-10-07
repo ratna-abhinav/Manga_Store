@@ -7,7 +7,7 @@
 </head>
 <body>
 <section>
-    <div class="container-fluid mt-5 p-5 bg-light">
+    <div class="container-fluid mt-5 p-5" id="light-background">
         <div class="row justify-content-center mb-2">
             <div class="col-md-3">
                 <th:block th:if="${session.succMsg}">
@@ -35,7 +35,7 @@
                     </div>
                     <div class="card-body">
                         <div class="text-center mb-5 mt-2">
-                            <img alt="" th:src="@{'../img/profile_img/'+${users.profileImage}}"
+                            <img alt="" th:src="@{'../img/profile_img/'+${currentUser.profileImage}}"
                                  class="border border-success object-fit-cover"
                                  style="width: 110px; height: 110px; border-radius: 50%;">
                         </div>
@@ -47,49 +47,49 @@
                                         <th scope="row">Name</th>
                                         <td>:</td>
                                         <td>
-                                            <input type="text" name="name" class="form-control" th:value="${users.name}">
+                                            <input type="text" name="name" class="form-control" th:value="${currentUser.name}">
                                         </td>
                                     </tr>
                                     <tr>
                                         <th scope="row">Mobile Number</th>
                                         <td>:</td>
                                         <td>
-                                            <input type="text" name="mobileNumber" class="form-control" th:value="${users.mobileNumber}">
+                                            <input type="text" name="mobileNumber" class="form-control" th:value="${currentUser.mobileNumber}">
                                         </td>
                                     </tr>
                                     <tr>
                                         <th scope="row">Email</th>
                                         <td>:</td>
                                         <td>
-                                            <input type="text" name="" class="form-control" readonly th:value="${users.email}">
+                                            <input type="text" name="" class="form-control" readonly th:value="${currentUser.email}">
                                         </td>
                                     </tr>
                                     <tr>
                                         <th scope="row">Address</th>
                                         <td>:</td>
                                         <td>
-                                            <input type="text" name="address" class="form-control" th:value="${users.address}">
+                                            <input type="text" name="address" class="form-control" th:value="${currentUser.address}">
                                         </td>
                                     </tr>
                                     <tr>
                                         <th scope="row">City</th>
                                         <td>:</td>
                                         <td>
-                                            <input type="text" name="city" class="form-control" th:value="${users.city}">
+                                            <input type="text" name="city" class="form-control" th:value="${currentUser.city}">
                                         </td>
                                     </tr>
                                     <tr>
                                         <th scope="row">State</th>
                                         <td>:</td>
                                         <td>
-                                            <input type="text" name="state" class="form-control" th:value="${users.state}">
+                                            <input type="text" name="state" class="form-control" th:value="${currentUser.state}">
                                         </td>
                                     </tr>
                                     <tr>
                                         <th scope="row">Pincode</th>
                                         <td>:</td>
                                         <td>
-                                            <input type="text" name="pincode" class="form-control" th:value="${users.pincode}">
+                                            <input type="text" name="pincode" class="form-control" th:value="${currentUser.pincode}">
                                         </td>
                                     </tr>
                                     <tr>
@@ -103,15 +103,15 @@
                                         <th scope="row">Role Assigned</th>
                                         <td>:</td>
                                         <td>
-                                            <input type="text" name="" class="form-control" readonly th:value="${users.role}">
+                                            <input type="text" name="" class="form-control" readonly th:value="${currentUser.role}">
                                         </td>
                                     </tr>
                                     <tr>
                                         <th scope="row">Account Status</th>
                                         <td>:</td>
                                         <td>
-                                            <input type="text" name="" class="form-control" readonly th:value="${users.isEnable}">
-                                            <input type="hidden" th:value="${users.id}" name="id">
+                                            <input type="text" name="" class="form-control" readonly th:value="${currentUser.isEnable}">
+                                            <input type="hidden" th:value="${currentUser.id}" name="id">
                                         </td>
                                     </tr>
                                     <tr>

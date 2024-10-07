@@ -6,98 +6,66 @@
     <title>Insert title here</title>
 </head>
 <body>
-<section class="">
-    <!-- Start Slider  -->
-
-    <div id="carouselExample" class="carousel slide mt-5">
-        <div class="carousel-inner">
-            <div class="carousel-item active">
-                <img src="img/homeImg-1.jpg" class="object-fit-cover d-block w-100" alt="..."
-                     height="410px">
-            </div>
-            <div class="carousel-item">
-                <img src="img/homeImg-3.jpg" class="object-fit-cover d-block w-100" alt="..."
-                     height="410px">
-            </div>
-            <div class="carousel-item">
-                <img src="img/homeImg-4.jpg" class="object-fit-cover d-block w-100" alt="..."
-                     height="410px">
-            </div>
-            <div class="carousel-item">
-                <img src="img/homeImg-2.jpg" class="object-fit-cover d-block w-100" alt="..."
-                     height="410px">
-            </div>
-        </div>
-        <button class="carousel-control-prev" type="button"
-                data-bs-target="#carouselExample" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
-        </button>
-        <button class="carousel-control-next" type="button"
-                data-bs-target="#carouselExample" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
-        </button>
-    </div>
-
-    <!-- End Slider  -->
+<section id="light-background">
 
     <!--< Start Category Module -->
-
-    <div class="container-fluid p-3">
+    <div class="container-fluid p-3" style="margin-top: 70px">
         <div class="row">
-            <p class="text-center fs-4 bg-danger-subtle bg-gradient">Categories</p>
+            <p class="text-center fs-4 bg-body-secondary text-black bg-gradient">Categories</p>
 
-            <div class="col">
-                <div class="card rounded-circle shadow-sm p-3 bg-light rounded ">
-                    <div class="card-body text-center">
-                        <img class="object-fit-cover" src="img/category_img/beuty.png" width="65%" height="140px">
-                        <p>Beauty</p>
+            <div id="categoryCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <div class="row row-cols-5">
+                            <!-- First 6 items (use `th:each` for dynamic rendering) -->
+                            <div class="col" th:each="c, iterStat : ${allActiveCategories}"
+                                 th:if="${iterStat.index < 5}">
+                                <div class="card shadow-sm bg-body-tertiary">
+                                    <div class="card-body text-center">
+                                        <a th:href="@{'/products?category='+${c.name}}" class="text-decoration-none">
+                                            <img th:src="@{'img/category_img/'+${c.imageName}}" width="100%"
+                                                 height="260px" class="object-fit-cover mb-2">
+                                        </a>
+                                        <br>
+                                        <a th:href="@{'/products?category='+${c.name}}" class="text-decoration-none">[[${c.name}]]</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-
-
-            <div class="col">
-                <div class="card rounded-circle shadow-sm p-3 bg-light rounded ">
-                    <div class="card-body text-center">
-                        <img class="object-fit-cover" src="img/category_img/pant.png" width="65%" height="140px">
-                        <p>Clothes</p>
+                    <div class="carousel-item">
+                        <div class="row row-cols-5">
+                            <div class="col" th:each="c, iterStat : ${allActiveCategories}"
+                                 th:if="${iterStat.index >= 5 && iterStat.index < 10}">
+                                <div class="card shadow-sm bg-body-tertiary">
+                                    <div class="card-body text-center">
+                                        <a th:href="@{'/products?category='+${c.name}}" class="text-decoration-none">
+                                            <img th:src="@{'img/category_img/'+${c.imageName}}" width="100%"
+                                                 height="260px" class="object-fit-cover mb-2">
+                                        </a>
+                                        <br>
+                                        <a th:href="@{'/products?category='+${c.name}}" class="text-decoration-none">[[${c.name}]]</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                    <!-- Add more carousel-item divs as needed to accommodate all categories -->
                 </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#categoryCarousel"
+                        data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#categoryCarousel"
+                        data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
             </div>
-
-            <div class="col">
-                <div class="card rounded-circle shadow-sm p-3 bg-light rounded ">
-                    <div class="card-body text-center">
-                        <img class="object-fit-cover" src="img/category_img/laptop.jpg" width="65%" height="140px">
-                        <p>Laptop</p>
-                    </div>
-                </div>
-            </div>
-
-
-            <div class="col">
-                <div class="card rounded-circle shadow-sm p-3 bg-light rounded ">
-                    <div class="card-body text-center">
-                        <img class="object-fit-cover bg-none" src="img/category_img/mobile.png" width="65%" height="140px">
-                        <p>Mobile</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col">
-                <div class="card rounded-circle shadow-sm p-3 bg-light rounded ">
-                    <div class="card-body text-center">
-                        <img class="object-fit-cover" src="img/category_img/monitor.jpg" width="65%" height="140px">
-                        <p>Monitor</p>
-                    </div>
-                </div>
-            </div>
-
-
         </div>
     </div>
+
 
     <!-- End Category Module -->
 
@@ -105,47 +73,86 @@
 
     <div class="container-fluid p-3">
         <div class="row">
-            <p class="text-center fs-4 bg-danger-subtle bg-gradient">Latest Products</p>
+            <p class="text-center fs-4 bg-body-secondary text-black bg-gradient">Products</p>
 
-            <div class="col">
-                <div class="card shadow-sm p-3 mb-5 bg-light rounded">
-                    <div class="card-body text-center">
-                        <img alt="" src="img/product_img/oneplus mobile.jpg" class="object-fit-cover" width="65%"
-                             height="140px">
-                        <p class="text-center">One Plus</p>
+            <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <div class="row row-cols-5">
+                            <!-- First 6 products -->
+                            <div class="col" th:each="p, iterStat : ${allActiveProducts}" th:if="${iterStat.index < 5}">
+                                <div class="card shadow-sm bg-body-tertiary">
+                                    <div class="card-body text-center">
+                                        <a th:href="@{'/product/'+${p.id}}" class="text-decoration-none">
+                                            <img th:src="@{'img/product_img/'+${p.image}}" width="100%" height="260px" class="object-fit-cover mb-2">
+                                        </a>
+                                        <br>
+                                        <a th:href="@{'/product/'+${p.id}}" class="text-decoration-none">[[${p.title}]]</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                    <div class="carousel-item">
+                        <div class="row row-cols-5">
+                            <!-- Next 6 products -->
+                            <div class="col" th:each="p, iterStat : ${allActiveProducts}" th:if="${iterStat.index >= 5 && iterStat.index < 10}">
+                                <div class="card shadow-sm bg-body-tertiary">
+                                    <div class="card-body text-center">
+                                        <a th:href="@{'/product/'+${p.id}}" class="text-decoration-none">
+                                            <img th:src="@{'img/product_img/'+${p.image}}" width="100%" height="260px" class="object-fit-cover mb-2">
+                                        </a>
+                                        <br>
+                                        <a th:href="@{'/product/'+${p.id}}" class="text-decoration-none">[[${p.title}]]</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="row row-cols-5">
+                            <!-- Next 6 products -->
+                            <div class="col" th:each="p, iterStat : ${allActiveProducts}" th:if="${iterStat.index >= 10 && iterStat.index < 15}">
+                                <div class="card shadow-sm bg-body-tertiary">
+                                    <div class="card-body text-center">
+                                        <a th:href="@{'/product/'+${p.id}}" class="text-decoration-none">
+                                            <img th:src="@{'img/product_img/'+${p.image}}" width="100%" height="260px" class="object-fit-cover mb-2">
+                                        </a>
+                                        <br>
+                                        <a th:href="@{'/product/'+${p.id}}" class="text-decoration-none">[[${p.title}]]</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="row row-cols-5">
+                            <!-- Next 6 products -->
+                            <div class="col" th:each="p, iterStat : ${allActiveProducts}" th:if="${iterStat.index >= 15 && iterStat.index < 20}">
+                                <div class="card shadow-sm bg-body-tertiary">
+                                    <div class="card-body text-center">
+                                        <a th:href="@{'/product/'+${p.id}}" class="text-decoration-none">
+                                            <img th:src="@{'img/product_img/'+${p.image}}" width="100%" height="260px" class="object-fit-cover mb-2">
+                                        </a>
+                                        <br>
+                                        <a th:href="@{'/product/'+${p.id}}" class="text-decoration-none">[[${p.title}]]</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Add more carousel-item divs as needed for more products -->
                 </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
             </div>
 
-            <div class="col">
-                <div class="card shadow-sm p-3 mb-5 bg-light rounded">
-                    <div class="card-body text-center">
-                        <img alt="" src="img/product_img/iphone 14.jpg" class="object-fit-cover" width="65%"
-                             height="140px">
-                        <p class="text-center">iPhone 14</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col">
-                <div class="card shadow-sm p-3 mb-5 bg-light rounded">
-                    <div class="card-body text-center">
-                        <img alt="" src="img/product_img/fridge.png" class="object-fit-cover" width="65%"
-                             height="140px">
-                        <p class="text-center">Fridge</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col">
-                <div class="card shadow-sm p-3 mb-5 bg-light rounded">
-                    <div class="card-body text-center">
-                        <img alt="" src="img/product_img/grinder.jpg" class="object-fit-cover" width="65%"
-                             height="140px">
-                        <p class="text-center">Grinder</p>
-                    </div>
-                </div>
-            </div>
 
         </div>
     </div>

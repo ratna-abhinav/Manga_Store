@@ -47,7 +47,7 @@ public class UserController {
         if (p != null) {
             String email = p.getName();
             Users currentUser = userService.getUserByEmail(email);
-            m.addAttribute("users", currentUser);
+            m.addAttribute("currentUser", currentUser);
             Integer cartQuantity = cartService.getCountCart(currentUser.getId());
             m.addAttribute("countCart", cartQuantity);
         }

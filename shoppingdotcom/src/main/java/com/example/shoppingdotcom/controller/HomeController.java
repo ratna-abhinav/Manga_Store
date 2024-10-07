@@ -60,7 +60,7 @@ public class HomeController {
         if (p != null) {
             String email = p.getName();
             Users currentUser = userService.getUserByEmail(email);
-            m.addAttribute("users", currentUser);
+            m.addAttribute("currentUser", currentUser);
             Integer cartQuantity = cartService.getCountCart(currentUser.getId());
             m.addAttribute("countCart", cartQuantity);
         }
@@ -69,7 +69,18 @@ public class HomeController {
     }
 
     @GetMapping("/")
+    public String home(Model m) {
+        return "home";
+    }
+
+    @GetMapping("/home")
     public String index(Model m) {
+        List<Category> allActiveCategory = categoryService.getAllActiveCategory().stream()
+                .sorted((c1, c2) -> c1.getId().compareTo(c2.getId())).toList();
+        List<Product> allActiveProducts = productService.getAllActiveProducts("").stream()
+                .sorted((p1, p2) -> p2.getId().compareTo(p1.getId())).toList();
+        m.addAttribute("allActiveCategories", allActiveCategory);
+        m.addAttribute("allActiveProducts", allActiveProducts);
         return "index";
     }
 
@@ -126,19 +137,24 @@ public class HomeController {
     @PostMapping("/saveUser")
     public String saveUser(@ModelAttribute Users user, @RequestParam("img") MultipartFile file, HttpSession session) throws IOException {
 
-        String imageName = file.isEmpty() ? "default.jpg" : file.getOriginalFilename();
-        user.setProfileImage(imageName);
-        Users saveUser = userService.saveUser(user);
-
-        if (!ObjectUtils.isEmpty(saveUser)) {
-            if (!file.isEmpty()) {
-                File saveFile = new ClassPathResource("static/img").getFile();
-                Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "profile_img" + File.separator + imageName);
-                Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-            }
-            session.setAttribute("succMsg", "User registered successfully");
+        Boolean existsEmail = userService.existsEmail(user.getEmail());
+        if (existsEmail) {
+            session.setAttribute("errorMsg", "Email already exists !!");
         } else {
-            session.setAttribute("errorMsg", "User cannot be saved! Internal Server error");
+            String imageName = file.isEmpty() ? "default.jpg" : file.getOriginalFilename();
+            user.setProfileImage(imageName);
+            Users saveUser = userService.saveUser(user);
+
+            if (!ObjectUtils.isEmpty(saveUser)) {
+                if (!file.isEmpty()) {
+                    File saveFile = new ClassPathResource("static/img").getFile();
+                    Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "profile_img" + File.separator + imageName);
+                    Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+                }
+                session.setAttribute("succMsg", "User registered successfully");
+            } else {
+                session.setAttribute("errorMsg", "User cannot be saved! Internal Server error");
+            }
         }
         return "redirect:/register";
     }

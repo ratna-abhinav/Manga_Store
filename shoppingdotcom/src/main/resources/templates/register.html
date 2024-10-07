@@ -7,7 +7,7 @@
 </head>
 <body>
 <section>
-    <div class="container-fluid mt-5 p-5">
+    <div class="container-fluid mt-5 p-5" id="cool-background">
 
         <div class="row justify-content-center mb-2">
             <div class="col-md-3">
@@ -29,13 +29,13 @@
             </div>
         </div>
 
-        <div class=" row justify-content-center bg-light rounded card-sh">
+        <div class="row justify-content-center bg-light rounded card-sh p-4">
             <div class="col-md-7 p-4">
                 <div class="card card-sh border border-info">
                     <div class="card-header text-center bg-info-subtle bg-gradient">
                         <p class="fs-4 text-center m-auto">SIGNUP</p>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body bg-light">
                         <form action="/saveUser" enctype="multipart/form-data" id="userRegister" novalidate method="post">
                             <div class="row mb-3">
                                 <div class="col">
@@ -86,7 +86,7 @@
                             <div class="row mb-3">
                                 <div class="col">
                                     <label class="form-label">Password</label>
-                                    <input required class="form-control" name="password" type="password" id="pass">
+                                    <input required class="form-control" name="password" type="password" id="checkpass">
                                 </div>
 
                                 <div class="col">

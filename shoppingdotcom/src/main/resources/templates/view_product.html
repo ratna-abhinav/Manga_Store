@@ -74,12 +74,12 @@
             </div>
 
             <th:block th:if="${product.stock>0}">
-                <th:block th:if="${users==null}">
+                <th:block th:if="${currentUser==null}">
                     <a href="/signin" class="btn btn-danger col-md-12 mb-4">Add To Cart</a>
                 </th:block>
 
-                <th:block th:unless="${users==null}">
-                    <a th:href="@{'/users/addCart?pid='+${product.id}+'&uid='+${users.id}}" class="btn btn-danger col-md-12 mb-4">Add To Cart</a>
+                <th:block th:unless="${currentUser==null}">
+                    <a th:href="@{'/users/addCart?pid='+${product.id}+'&uid='+${currentUser.id}}" class="btn btn-danger col-md-12 mb-4">Add To Cart</a>
                 </th:block>
             </th:block>
 

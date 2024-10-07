@@ -60,7 +60,11 @@ public class AdminController {
         if (p != null) {
             String email = p.getName();
             Users currentUser = userService.getUserByEmail(email);
-            m.addAttribute("users", currentUser);
+            System.out.println("Current Logged In User = " + currentUser.getName());
+            System.out.println("Current Logged In User Id = " + currentUser.getId());
+            System.out.println("Current Logged In User Id = " + currentUser.getEmail());
+
+            m.addAttribute("currentUser", currentUser);
             Integer countCart = cartService.getCountCart(currentUser.getId());
             m.addAttribute("countCart", countCart);
         }
@@ -78,11 +82,6 @@ public class AdminController {
     public String loadAddProduct(Model m) {
         m.addAttribute("categories", categoryService.getAllCategory());
         return "admin/add_product";
-    }
-
-    @GetMapping("/add-admin")
-    public String loadAdminAdd() {
-        return "/admin/add_admin";
     }
 
     @GetMapping("/category")
@@ -274,7 +273,8 @@ public class AdminController {
     }
 
     @PostMapping("/updateProduct/{id}")
-    public String updateProduct(@PathVariable("id") int id, @ModelAttribute Product product, @RequestParam("file") MultipartFile image, HttpSession session) {
+    public String updateProduct(@PathVariable("id") int id, @RequestParam("file") MultipartFile image, HttpSession session) {
+        Product product = productService.getProductById(id);
         product.setId(id);
         if (product.getDiscount() < 0 || product.getDiscount() > 100) {
             session.setAttribute("errorMsg", "invalid Discount!");
@@ -305,21 +305,28 @@ public class AdminController {
     }
 
     @GetMapping("/users")
-    public String getAllUsers(Model m) {
-        List<Users> users = userService.getUsers("ROLE_USER");
+    public String getAllUsers(Model m, @RequestParam Integer type) {
+
+        List<Users> users = null;
+        if (type == 1) {
+            users = userService.getUsers("ROLE_USER");
+        } else {
+            users = userService.getUsers("ROLE_ADMIN");
+        }
+        m.addAttribute("userType", type);
         m.addAttribute("allUsers", users);
         return "/admin/users";
     }
 
     @GetMapping("/updateStatus")
-    public String updateUserAccountStatus(@RequestParam Boolean status, @RequestParam Integer id, HttpSession session) {
+    public String updateUserAccountStatus(@RequestParam Boolean status, @RequestParam Integer id, @RequestParam Integer type, HttpSession session) {
         Boolean f = userService.updateAccountStatus(id, status);
         if (f) {
             session.setAttribute("succMsg", "Account Status Updated");
         } else {
             session.setAttribute("errorMsg", "Account status not updated! Internal Server Error");
         }
-        return "redirect:/admin/users";
+        return "redirect:/admin/users?type="+type;
     }
 
     @GetMapping("/orders")
@@ -376,6 +383,33 @@ public class AdminController {
         }
         return "redirect:/admin/orders";
     }
+
+    @GetMapping("/add-admin")
+    public String loadAdminAdd() {
+        return "/admin/add_admin";
+    }
+
+    @PostMapping("/save-admin")
+    public String saveAdmin(@ModelAttribute Users user, @RequestParam("img") MultipartFile file, HttpSession session) throws IOException {
+
+        String imageName = file.isEmpty() ? "default.jpg" : file.getOriginalFilename();
+        user.setProfileImage(imageName);
+        Users saveUser = userService.saveAdmin(user);
+
+        if (!ObjectUtils.isEmpty(saveUser)) {
+            if (!file.isEmpty()) {
+                File saveFile = new ClassPathResource("static/img").getFile();
+                Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "profile_img" + File.separator + imageName);
+                Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+            }
+            session.setAttribute("succMsg", "Admin registered successfully !!");
+        } else {
+            session.setAttribute("errorMsg", "Admin not registered !! Internal Server Error");
+        }
+
+        return "redirect:/admin/add-admin";
+    }
+
 
     @GetMapping("/profile")
     public String profile() {

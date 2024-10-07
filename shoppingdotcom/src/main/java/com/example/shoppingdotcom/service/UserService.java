@@ -29,4 +29,8 @@ public interface UserService {
     public Users updateUser(Users user);
 
     Users updateUserProfile(Users user, MultipartFile img);
+
+    Users saveAdmin(Users user);
+
+    Boolean existsEmail(String email);
 }
